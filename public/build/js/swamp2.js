@@ -1,0 +1,1 @@
+function avisoComentario(e){e.preventDefault(),Swal.fire({icon:"success",title:"Comentario Creado",text:"Tu Comentario fue enviado correctamente",button:"OK"}).then(()=>{setTimeout(()=>{e.target.submit()},500)})}

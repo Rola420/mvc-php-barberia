@@ -1,0 +1,46 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.boton {
+    @include m.boton(v.$azul, v.$blanco);
+}
+
+.boton-eliminar {
+    @include m.boton(v.$rojo, v.$blanco);
+}
+
+
+.botones-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem; /* Ajusta este valor según tu preferencia */
+}
+
+.botones-container form {
+    flex: 1;
+    margin-right: 1rem; /* Espacio entre los botones */
+}
+
+#mensaje-cita .span-realizado {
+    background-color: #9c9c9c;
+    padding: 1.5rem 4rem;
+    color: v.$negro;
+    margin-top: 2rem;
+    font-size: 2rem;
+    font-weight: 700;
+    border: none;
+    display: inline-block;
+    margin: 5rem 0;
+}
+
+#estado .estadoIn {
+    color: v.$rojo;
+    display: inline;
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+
+.realizar {
+    @include m.boton(v.$verde, v.$blanco);
+}

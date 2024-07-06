@@ -1,0 +1,68 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.comentario-pagina {
+    text-align: center;
+    margin: 7rem 0;
+}
+
+.ver-mas {
+    @include m.boton(v.$negro, v.$blanco);
+    margin: 0;
+}
+
+.listado-comentarios {
+
+    @include m.tablet {
+    @include m.grid(1, 2rem);
+    }
+
+    .acciones {
+        margin: 0;
+    }
+    
+    .boton,
+    .boton-eliminar {
+        margin: 0;
+        margin-bottom: 35px;
+    }
+
+
+    .comentario {
+        position: relative; /* Agregar posición relativa al contenedor de comentarios */
+
+        background-color: v.$blanco;
+        padding: 1rem;
+        border-radius: 1rem;
+        transition-property: transform;
+        transition-duration: 300ms;
+        margin-bottom: 4.5rem;
+
+
+        p {
+            color: v.$negro; /* Cambiar color del texto del comentario a azul */
+            margin: 0;
+        }
+
+        .nombre-comentario {
+            color: v.$azul; /* Cambiar color del nombre a blanco */
+            font-weight: v.$bold;
+            font-size: 2rem;
+            margin: 0;
+            position: absolute; /* Posicionar el nombre absolutamente */
+            top: -2.7rem; /* Ajustar la posición para que esté afuera del cuadro blanco */
+            left: 1rem; /* Ajustar la posición horizontal */
+            
+        }
+
+        .fecha-comentario {
+            color: v.$blanco;
+            font-weight: v.$bold;
+            font-size: 1rem;
+            margin: 0;
+            position: absolute; /* Posicionar la fecha absolutamente */
+            bottom: -2rem; /* Ajustar la posición para que esté en la esquina inferior */
+            right: 1rem; /* Ajustar la posición horizontal */
+        }
+    }
+}

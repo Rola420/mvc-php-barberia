@@ -1,0 +1,79 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.formulario {
+    margin-top: 5rem;
+    width: 100%;
+}
+
+.campo {
+    display: flex;
+    margin-bottom: 2rem;
+    align-items: center;
+    label{
+        flex: 0 0 10rem;
+    }
+
+    input{
+        flex: 1;
+        border: none;
+        padding: calc(v.$separacion/4);
+        border-radius: 1rem;
+
+        &:disabled {
+            background-color: ligthen(v.$negro, 30%);
+            color: v.$blanco;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.comentario {
+    display: flex;
+    margin-bottom: 2rem;
+    align-items: center;
+
+    textarea {
+        width: 100%;
+        border: none;
+        min-height: 50px;
+        resize: vertical;
+        overflow: auto;
+        border-radius: 1rem;
+        padding: 10px;
+        box-sizing: border-box;
+        
+        &:focus {
+            outline: none; // Elimina el contorno al enfocar
+            border-color: #4d90fe; // Cambia el color del borde al enfocar
+          }
+    }
+}
+
+.s2 {
+    display: flex;
+    margin-bottom: 5rem;
+    align-items: center;
+    label{
+        flex: 0 0 10rem;
+    }
+
+    select{
+        flex: 1;
+        border: none;
+        padding: calc(v.$separacion/4);
+        border-radius: 1rem;
+        color: v.$negro;
+
+        &:disabled {
+            background-color: lighten(v.$negro, 30%);
+            color: v.$blanco;
+            cursor: not-allowed;
+        }
+
+        &:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px v.$azul;
+        }
+    }
+}
