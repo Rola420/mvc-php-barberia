@@ -14,28 +14,29 @@ class APIController {
     }
 
     public static function guardar() {
-        
-        // Almacena la Cita y devuelve el ID
-        $cita = new Cita($_POST);
-        $resultado = $cita->guardar();
+    // Asegúrate de que el valor de 'realizada' está establecido
+    $_POST['realizada'] = $_POST['realizada'] ?? 0;
 
-        $id = $resultado['id'];
+    // Almacena la Cita y devuelve el ID
+    $cita = new Cita($_POST);
+    $resultado = $cita->guardar();
 
-        // Almacena la Cita y el Servicio
+    $id = $resultado['id'];
 
-        // Almacena los Servicios con el ID de la Cita
-        $idServicios = explode(",", $_POST['servicios']);
-        foreach($idServicios as $idServicio) {
-            $args = [
-                'citaId' => $id,
-                'servicioId' => $idServicio
-            ];
-            $citaServicio = new CitaServicio($args);
-            $citaServicio->guardar();
-        }
-
-        echo json_encode(['resultado' => $resultado]);
+    // Almacena los Servicios con el ID de la Cita
+    $idServicios = explode(",", $_POST['servicios']);
+    foreach($idServicios as $idServicio) {
+        $args = [
+            'citaId' => $id,
+            'servicioId' => $idServicio
+        ];
+        $citaServicio = new CitaServicio($args);
+        $citaServicio->guardar();
     }
+
+    echo json_encode(['resultado' => $resultado]);
+}
+
 
     public static function eliminar() {
         
