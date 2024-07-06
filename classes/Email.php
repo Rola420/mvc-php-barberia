@@ -3,6 +3,7 @@
 namespace Classes;
 
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class Email {
 
@@ -19,65 +20,103 @@ class Email {
     }
 
     public function enviarConfirmacion() {
+        $mail = new PHPMailer(true);
 
-        // create a new object
-        $mail = new PHPMailer();
-        $mail->isSMTP();
-        $mail->Host =  $_ENV['EMAIL_HOST'];
-        $mail->SMTPAuth = true;
-        $mail->Port = $_ENV['EMAIL_PORT'];
-        $mail->Username = $_ENV['EMAIL_USER'];
-        $mail->Password = $_ENV['EMAIL_PASSWORD'];
-    
-        $mail->setFrom('cuentas@appsalon.com');
-        $mail->addAddress('cuentas@appsalon.com', 'AppSalon.com');
-        $mail->Subject = 'Confirma tu Cuenta';
+        try {
+            // Validar que el correo no esté vacío
+            if (empty($this->correo) || !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("La dirección de correo no es válida: " . $this->correo);
+            }
 
-        // Set HTML
-        $mail->isHTML(TRUE);
-        $mail->CharSet = 'UTF-8';
+            // Validar que el nombre no esté vacío
+            if (empty($this->nombre)) {
+                throw new Exception("El nombre no puede estar vacío.");
+            }
 
-        $contenido = '<html>';
-        $contenido .= "<p><strong>Hola " . $this->correo .  "</strong> Has Creado tu cuenta en App Salón, solo debes confirmarla presionando el siguiente enlace</p>";
-        $contenido .= "<p>Presiona aquí: <a href='" .  $_ENV['APP_URL']  . "/confirmar-cuenta?token=" . $this->token . "'>Confirmar Cuenta</a>";        
-        $contenido .= "<p>Si tu no solicitaste este cambio, has caso omiso</p>";
-        $contenido .= '</html>';
-        $mail->Body = $contenido;
+            // Configuración del servidor
+            $mail->isSMTP();
+            $mail->Host = $_ENV['EMAIL_HOST'];
+            $mail->SMTPAuth = true;
+            $mail->Port = $_ENV['EMAIL_PORT'];
+            $mail->Username = $_ENV['EMAIL_USER'];
+            $mail->Password = $_ENV['EMAIL_PASSWORD'];
+            
+            // Configuración del remitente y destinatario
+            $mail->setFrom('cuentas@appsalon.com', 'AppSalon.com');
+            $mail->addAddress($this->correo, $this->nombre); // Correo del destinatario
 
-        //Enviar el mail
-        $mail->send();
+            // Asunto y contenido del correo
+            $mail->Subject = 'Confirma tu Cuenta';
+            $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
 
+            $contenido = '<html>';
+            $contenido .= "<p><strong>Hola " . htmlspecialchars($this->nombre) .  "</strong>, has creado tu cuenta en App Salón, solo debes confirmarla presionando el siguiente enlace:</p>";
+            $contenido .= "<p>Presiona aquí: <a href='" .  $_ENV['APP_URL']  . "/confirmar-cuenta?token=" . htmlspecialchars($this->token) . "'>Confirmar Cuenta</a></p>";        
+            $contenido .= "<p>Si tú no solicitaste este cambio, haz caso omiso de este correo.</p>";
+            $contenido .= '</html>';
+            $mail->Body = $contenido;
+
+            // Enviar el correo
+            if(!$mail->send()) {
+                throw new Exception("El mensaje no se pudo enviar. Error de correo: {$mail->ErrorInfo}");
+            }
+
+            echo 'El mensaje ha sido enviado';
+
+        } catch (Exception $e) {
+            echo "Error al enviar el correo: {$e->getMessage()}";
+        }
     }
-
-    public function enviarInstrucciones() {
-
-        // create a new object
-        $mail = new PHPMailer();
-        $mail->isSMTP();
-        $mail->Host =  $_ENV['EMAIL_HOST'];
-        $mail->SMTPAuth = true;
-        $mail->Port = $_ENV['EMAIL_PORT'];
-        $mail->Username = $_ENV['EMAIL_USER'];
-        $mail->Password = $_ENV['EMAIL_PASSWORD'];
     
-        $mail->setFrom('cuentas@appsalon.com');
-        $mail->addAddress('cuentas@appsalon.com', 'AppSalon.com');
-        $mail->Subject = 'Reestablece tu contraseña';
+    public function enviarInstrucciones() {
+        $mail = new PHPMailer(true);
 
-        // Set HTML
-        $mail->isHTML(TRUE);
-        $mail->CharSet = 'UTF-8';
+        try {
+            // Validar que el correo no esté vacío
+            if (empty($this->correo) || !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("La dirección de correo no es válida: " . $this->correo);
+            }
 
-        $contenido = '<html>';
-        $contenido .= "<p><strong>Hola " . $this->nombre .  "</strong> Has solicitado reestablecer tu contraseña, sigue el siguiente enlace para hacerlo.</p>";
-        $contenido .= "<p>Presiona aquí: <a href='" .  $_ENV['APP_URL']  . "/recuperar?token=" . $this->token . "'>Reestablecer Contraseña</a>";        
-        $contenido .= "<p>Si tu no solicitaste este cambio, has caso omiso</p>";
-        $contenido .= '</html>';
-        $mail->Body = $contenido;
+            // Validar que el nombre no esté vacío
+            if (empty($this->nombre)) {
+                throw new Exception("El nombre no puede estar vacío.");
+            }
 
-        //Enviar el mail
-        $mail->send();
+            // Configuración del servidor
+            $mail->isSMTP();
+            $mail->Host = $_ENV['EMAIL_HOST'];
+            $mail->SMTPAuth = true;
+            $mail->Port = $_ENV['EMAIL_PORT'];
+            $mail->Username = $_ENV['EMAIL_USER'];
+            $mail->Password = $_ENV['EMAIL_PASSWORD'];
 
+            // Configuración del remitente y destinatario
+            $mail->setFrom('cuentas@appsalon.com', 'AppSalon.com');
+            $mail->addAddress($this->correo, $this->nombre); // Correo del destinatario
+
+            // Asunto y contenido del correo
+            $mail->Subject = 'Reestablece tu contraseña';
+            $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
+
+            $contenido = '<html>';
+            $contenido .= "<p><strong>Hola " . htmlspecialchars($this->nombre) .  "</strong>, has solicitado reestablecer tu contraseña. Sigue el siguiente enlace para hacerlo:</p>";
+            $contenido .= "<p>Presiona aquí: <a href='" .  $_ENV['APP_URL']  . "/recuperar?token=" . htmlspecialchars($this->token) . "'>Reestablecer Contraseña</a></p>";        
+            $contenido .= "<p>Si tú no solicitaste este cambio, haz caso omiso de este correo.</p>";
+            $contenido .= '</html>';
+            $mail->Body = $contenido;
+
+            // Enviar el correo
+            if(!$mail->send()) {
+                throw new Exception("El mensaje no se pudo enviar. Error de correo: {$mail->ErrorInfo}");
+            }
+
+            echo 'El mensaje ha sido enviado';
+
+        } catch (Exception $e) {
+            echo "Error al enviar el correo: {$e->getMessage()}";
+        }
     }
 
 }
