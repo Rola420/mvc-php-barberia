@@ -1,5 +1,6 @@
 <?php
 namespace Model;
+#[\AllowDynamicProperties]
 class ActiveRecord {
 
     // Base DE DATOS
@@ -9,27 +10,39 @@ class ActiveRecord {
 
     // Alertas y Mensajes
     protected static $alertas = [];
+
+    // PHP 8.1/8.2
+    public $id;
     
     // Definir la conexión a la BD - includes/database.php
     public static function setDB($database) {
-        self::$db = $database;
+    self::$db = $database;
+
+        // Verificar la conexión
+        if (self::$db->connect_error) {
+            error_log('Database connection error: ' . self::$db->connect_error);
+            die('Database connection error: ' . self::$db->connect_error);
+        }
     }
 
+
+    // Setear un tipo de Alerta
     public static function setAlerta($tipo, $mensaje) {
         static::$alertas[$tipo][] = $mensaje;
     }
 
-    // Validación
+    // Obtener las alertas
     public static function getAlertas() {
         return static::$alertas;
     }
 
+    // Validación que se hereda en modelos
     public function validar() {
         static::$alertas = [];
         return static::$alertas;
     }
 
-    // Consulta SQL para crear un objeto en Memoria
+    // Consulta SQL para crear un objeto en Memoria (Active Record)
     public static function consultarSQL($query) {
         // Consultar la base de datos
         $resultado = self::$db->query($query);
@@ -56,7 +69,6 @@ class ActiveRecord {
                 $objeto->$key = $value;
             }
         }
-
         return $objeto;
     }
 
@@ -75,7 +87,11 @@ class ActiveRecord {
         $atributos = $this->atributos();
         $sanitizado = [];
         foreach($atributos as $key => $value ) {
-            $sanitizado[$key] = self::$db->escape_string($value);
+            if ($value !== null) {
+                $sanitizado[$key] = self::$db->escape_string($value);
+            } else {
+                $sanitizado[$key] = null; // O puedes elegir un valor predeterminado, según tus necesidades
+            }
         }
         return $sanitizado;
     }
@@ -91,70 +107,149 @@ class ActiveRecord {
 
     // Registros - CRUD
     public function guardar() {
-        $resultado = '';
-        if(!is_null($this->id)) {
-            // actualizar
-            $resultado = $this->actualizar();
-        } else {
-            // Creando un nuevo registro
-            $resultado = $this->crear();
-        }
-        return $resultado;
+    // Log de los datos recibidos en la solicitud POST
+    error_log(print_r($_POST, true));
+
+    $resultado = '';
+    if(!is_null($this->id)) {
+        // actualizar
+        $resultado = $this->actualizar();
+    } else {
+        // Creando un nuevo registro
+        $resultado = $this->crear();
+    }
+    return $resultado;
     }
 
-    // Todos los registros
-    public static function all() {
-        $query = "SELECT * FROM " . static::$tabla;
+
+    // Obtener todos los Registros
+    public static function all($orden = 'DESC') {
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY id {$orden}";
         $resultado = self::consultarSQL($query);
         return $resultado;
     }
 
     // Busca un registro por su id
     public static function find($id) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE id = ${id}";
+        $query = "SELECT * FROM " . static::$tabla  ." WHERE id = {$id}";
         $resultado = self::consultarSQL($query);
         return array_shift( $resultado ) ;
     }
 
     // Obtener Registros con cierta cantidad
     public static function get($limite) {
-        $query = "SELECT * FROM " . static::$tabla . " LIMIT ${limite}";
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY id DESC LIMIT {$limite} " ;
         $resultado = self::consultarSQL($query);
-        return array_shift( $resultado ) ;
+        return $resultado;
     }
 
-    // Busca un registro por su id
+    // Paginar los registros
+    public static function paginar($por_pagina, $offset) {
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY id DESC LIMIT {$por_pagina} OFFSET {$offset}" ;
+        $resultado = self::consultarSQL($query);
+        return ( $resultado ) ;
+    }
+
+    // Obtener un total de registros
+    public static function total($columna = '', $valor = '') {
+        $query = "SELECT COUNT(*) FROM " . static::$tabla;
+        if($columna) {
+            $query .= " WHERE {$columna} = {$valor}";
+        }
+        $resultado = self::$db->query($query);
+        $total = $resultado->fetch_array();
+        return array_shift( $total ) ;
+    }
+
+    // Total de registros con un array where
+    public static function totalArray($array = []) {
+        $query = "SELECT COUNT(*) FROM " . static::$tabla . " WHERE ";
+        foreach($array as $key => $value) {
+            if($key === array_key_last($array)) {
+                $query .= "{$key} = '{$value}'";
+            } else {
+                $query .= "{$key} = '{$value}' AND ";
+            }
+        }
+        $resultado = self::$db->query($query);
+        $total = $resultado->fetch_array();
+        return array_shift( $total ) ;
+    }
+
+    // Busqueda Where con Columna 
     public static function where($columna, $valor) {
-        $query = "SELECT * FROM " . static::$tabla  ." WHERE ${columna} = '${valor}'";
+        $query = "SELECT * FROM " . static::$tabla . " WHERE {$columna} = '{$valor}'";
         $resultado = self::consultarSQL($query);
         return array_shift( $resultado ) ;
     }
 
-    // Consulta Plana de SQL (Utilizar cuando los métodos del modelo no son suficientess)
+    // Retornar los registros por un orden
+    public static function ordenar($columna, $orden) {
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY {$columna} {$orden}";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
+
+    // Retornar por orden y con un limite
+    public static function ordenarLimite($columna, $orden, $limite) {
+        $query = "SELECT * FROM " . static::$tabla . " ORDER BY {$columna} {$orden} LIMIT {$limite}";
+        $resultado = self::consultarSQL($query);
+        return $resultado;
+    }
+
+    // Busqueda Where con multiples opciones 
+    public static function whereArray($array = []) {
+        $query = "SELECT * FROM " . static::$tabla . " WHERE ";
+        foreach($array as $key => $value) {
+            if($key === array_key_last($array)) {
+                $query .= "{$key} = '{$value}'";
+            } else {
+                $query .= "{$key} = '{$value}' AND ";
+            }
+        }
+
+        $resultado = self::consultarSQL($query);
+        return $resultado ;
+    }
+
+    // Consulta Plana de SQL (Utilizar cuando los metodos no son suficientes)
     public static function SQL($query) {
         $resultado = self::consultarSQL($query);
         return $resultado;
     }
 
     // crea un nuevo registro
-    public function crear() {
-        // Sanitizar los datos
-        $atributos = $this->sanitizarAtributos();
+   public function crear() {
+    // Sanitizar los datos
+    $atributos = $this->sanitizarAtributos();
 
-        // Insertar en la base de datos
-        $query = " INSERT INTO " . static::$tabla . " ( ";
-        $query .= join(', ', array_keys($atributos));
-        $query .= " ) VALUES (' "; 
-        $query .= join("', '", array_values($atributos));
-        $query .= " ') ";
+    $atributos = array_map('trim', $atributos);
 
-        // Resultado de la consulta
-        $resultado = self::$db->query($query);
-        return [
-           'resultado' =>  $resultado,
-           'id' => self::$db->insert_id
-        ];
+    // Insertar en la base de datos
+    $query = "INSERT INTO " . static::$tabla . " (";
+    $query .= join(', ', array_keys($atributos));
+    $query .= ") VALUES ('"; 
+    $query .= join("', '", array_values($atributos));
+    $query .= "') ";
+
+    // Log de la consulta
+    error_log($query); // Log de la consulta SQL
+
+    // Resultado de la consulta
+    $resultado = self::$db->query($query);
+
+    // Capturar y loguear el error de MySQL si ocurre
+    if (!$resultado) {
+        error_log('MySQL error: ' . self::$db->error);
+        die('MySQL error: ' . self::$db->error);
     }
+
+    return [
+       'resultado' => $resultado,
+       'id' => self::$db->insert_id
+    ];
+}
+
 
     // Actualizar el registro
     public function actualizar() {
@@ -184,5 +279,4 @@ class ActiveRecord {
         $resultado = self::$db->query($query);
         return $resultado;
     }
-
 }
