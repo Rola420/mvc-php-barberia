@@ -24,7 +24,6 @@ class Email {
         $mail = new PHPMailer();
         $mail->isSMTP();
         $mail->Host =  $_ENV['EMAIL_HOST'];
-        $mail->SMTPAuth = true;
         $mail->Port = $_ENV['EMAIL_PORT'];
         $mail->Username = $_ENV['EMAIL_USER'];
         $mail->Password = $_ENV['EMAIL_PASSWORD'];
@@ -51,17 +50,20 @@ class Email {
 
     public function enviarInstrucciones() {
 
+        try{
+
         // create a new object
-        $mail = new PHPMailer();
+        $mail = new PHPMailer(true);
         $mail->isSMTP();
         $mail->Host =  $_ENV['EMAIL_HOST'];
         $mail->SMTPAuth = true;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = $_ENV['EMAIL_PORT'];
         $mail->Username = $_ENV['EMAIL_USER'];
         $mail->Password = $_ENV['EMAIL_PASSWORD'];
     
         $mail->setFrom('cuentas@appsalon.com');
-        $mail->addAddress('cuentas@appsalon.com', 'AppSalon.com');
+        $mail->addAddress($this->correo, $this->nombre);
         $mail->Subject = 'Reestablece tu contraseña';
 
         // Set HTML
@@ -78,6 +80,11 @@ class Email {
         //Enviar el mail
         $mail->send();
 
-    }
+        echo 'El mensaje ha sido enviado';
+    } catch (Exception $e) {
+        echo "El mensaje no pudo ser enviado. Mailer Error: {$mail->ErrorInfo}";
 
+    }
+    
+    }
 }
