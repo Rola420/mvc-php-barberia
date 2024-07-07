@@ -20,16 +20,19 @@ class Email {
 
     public function enviarConfirmacion() {
 
+        try {
         // create a new object
-        $mail = new PHPMailer();
+        $mail = new PHPMailer(true);
         $mail->isSMTP();
         $mail->Host =  $_ENV['EMAIL_HOST'];
+        $mail->SMTPAuth = true;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = $_ENV['EMAIL_PORT'];
         $mail->Username = $_ENV['EMAIL_USER'];
         $mail->Password = $_ENV['EMAIL_PASSWORD'];
     
-        $mail->setFrom('barberiaDanielElibar.com');
-        $mail->addAddress($this->correo, $this->nombre);
+        $mail->setFrom('barberiadaniel@gmail.com', 'BaberElibar');
+        $mail->addAddress($this->nombre, $this->correo);
         $mail->Subject = 'Confirma tu Cuenta';
 
         // Set HTML
@@ -46,6 +49,10 @@ class Email {
         //Enviar el mail
         $mail->send();
 
+        echo 'El mensaje ha sido enviado';
+    } catch (Exception $e) {
+        echo "El mensaje no pudo ser enviado. Mailer Error: {$mail->ErrorInfo}";
+    }
     }
 
     public function enviarInstrucciones() {
@@ -62,7 +69,7 @@ class Email {
         $mail->Username = $_ENV['EMAIL_USER'];
         $mail->Password = $_ENV['EMAIL_PASSWORD'];
     
-        $mail->setFrom('barberiaDanielElibar.com');
+        $mail->setFrom('barberiadaniel@gmail.com', 'BaberElibar');
         $mail->addAddress($this->correo, $this->nombre);
         $mail->Subject = 'Reestablece tu contraseña';
 
