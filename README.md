@@ -22,4 +22,4 @@ EMAIL_PASSWORD =
 APP_URL = http://localhost:3000
 
 
-NOTA: deberas contar con la XAMPP para correr el programa, phpmyadmin y gestionar la DB y tambien instalar composer para la ejecución del programa.
+NOTA: deberas contar con XAMPP para correr el programa, phpmyadmin y gestionar la DB y tambien instalar composer para la ejecución del programa.
